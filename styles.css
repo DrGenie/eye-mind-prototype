@@ -1,0 +1,33 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f8f9fa;
+}
+
+h1 {
+  font-weight: 500;
+}
+
+.tab-content {
+  min-height: 300px;
+}
+
+#loginMsg {
+  font-size: 0.9rem;
+}
+
+#riskResult strong {
+  font-size: 1.2rem;
+}
+
+#recommendations ol,
+#dceResult ul {
+  margin-left: 1rem;
+}
+
+.border {
+  background: #fff;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
