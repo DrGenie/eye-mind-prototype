@@ -1,4 +1,4 @@
-// State
+// Statee
 let loggedIn = false, score = 0, riskLevel = '';
 let modePref='', sizePref='', freqPref='';
 let gazeData=[], fixations=[];
