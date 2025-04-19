@@ -18,7 +18,6 @@
   <div class="container py-4">
     <h1 class="text-center mb-4">EyeMind – Hybrid Loneliness Intervention</h1>
 
-    <!-- Nav Tabs -->
     <ul class="nav nav-tabs" id="mainNav" role="tablist">
       <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#intro">Introduction</button></li>
       <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#instructions">Instructions</button></li>
@@ -33,18 +32,18 @@
     <div class="tab-content mt-3">
       <!-- Introduction -->
       <div class="tab-pane fade show active" id="intro">
-        <p>This app brings together AI risk scoring, advanced gaze analytics (calibration, fixations & heatmap), discrete choice experiments, audio journalling, calendar reminders, PDF sharing, and gamified badges to combat loneliness in older adults.</p>
+        <p>This app identifies loneliness risk, learns your preferences, measures engagement, and offers audio journalling, reminders, PDF sharing and motivational badges—all to connect you meaningfully with others.</p>
       </div>
 
       <!-- Instructions -->
       <div class="tab-pane fade" id="instructions">
         <ol>
-          <li>Go to <strong>Login</strong> and sign in with <code>testuser / welcome123</code>.</li>
-          <li>Complete the <strong>AI Risk</strong> questionnaire.</li>
-          <li>In <strong>Gaze Engagement</strong>, press Calibrate, click all 4 dots, then track your gaze.</li>
-          <li>Answer the scenarios in <strong>DCE</strong>.</li>
-          <li>Check <strong>Recommendations</strong>, record an <strong>Audio Journal</strong>, set reminders.</li>
-          <li>View your earned <em>Badges</em> and <strong>Summary</strong>. Export as PDF or share.</li>
+          <li>Login as <code>testuser/welcome123</code>.</li>
+          <li>Calculate your <strong>AI Risk</strong>.</li>
+          <li>Calibrate and track in <strong>Gaze Engagement</strong>.</li>
+          <li>Answer the <strong>DCE</strong> scenarios.</li>
+          <li>View <strong>Recommendations</strong>, record an <strong>Audio Journal</strong>, set reminders.</li>
+          <li>See your <em>Badges</em> and export your <strong>Summary</strong> as a PDF.</li>
         </ol>
       </div>
 
@@ -59,7 +58,7 @@
             <label class="form-label">Password</label>
             <input id="password" type="password" class="form-control" placeholder="welcome123"/>
           </div>
-          <button id="loginBtn" type="button" class="btn btn-primary">Login</button>
+          <button id="loginBtn" class="btn btn-primary">Login</button>
           <p id="loginMsg" class="mt-2"></p>
         </form>
       </div>
@@ -68,7 +67,7 @@
       <div class="tab-pane fade" id="ai">
         <h4>Loneliness Risk Assessment</h4>
         <div class="mb-3">
-          <label>How often do you feel left out?</label>
+          <label>Feel left out?</label>
           <select id="q1" class="form-select my-1">
             <option value="0">Never</option>
             <option value="1">Sometimes</option>
@@ -76,7 +75,7 @@
           </select>
         </div>
         <div class="mb-3">
-          <label>How often do you lack companionship?</label>
+          <label>Lack companionship?</label>
           <select id="q2" class="form-select my-1">
             <option value="0">Never</option>
             <option value="1">Sometimes</option>
@@ -90,14 +89,14 @@
       <!-- Gaze Engagement -->
       <div class="tab-pane fade" id="gaze">
         <h4>Gaze Engagement &amp; Calibration</h4>
-        <p id="calMsg">Press <strong>Calibrate</strong> and click the four dots.</p>
+        <p id="calMsg">Click “Calibrate” and tap each dot.</p>
         <button id="startCal" class="btn btn-secondary mb-2">Calibrate</button>
         <div id="calArea" class="border mb-2 position-relative">
-          <img src="https://via.placeholder.com/600x300" alt="Content" class="w-100 h-100"/>
+          <img src="https://via.placeholder.com/600x300" class="w-100 h-100" alt="Content"/>
           <div id="heatmapContainer" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
           <div id="gazeDot" style="position:absolute;width:12px;height:12px;background:red;border-radius:50%;display:none;pointer-events:none;"></div>
         </div>
-        <div id="gazeControls" class="d-none mb-3">
+        <div id="gazeControls" class="d-none mb-2">
           <button id="startGaze" class="btn btn-success me-2">Start Tracking</button>
           <button id="stopGaze" class="btn btn-danger me-2" disabled>Stop</button>
           <button id="toggleHeatmap" class="btn btn-secondary">Show Heatmap</button>
@@ -110,37 +109,31 @@
       <div class="tab-pane fade" id="dce">
         <h4>Discrete Choice Experiment</h4>
         <div class="scenario border p-3 mb-3">
-          <p><strong>Scenario 1:</strong> Which would you prefer?</p>
-          <div class="d-flex flex-column flex-md-row">
-            <label class="form-check me-3">
-              <input type="radio" name="sc1" value="A" class="form-check-input"/> A: Weekly in‑person meetup
-            </label>
-            <label class="form-check">
-              <input type="radio" name="sc1" value="B" class="form-check-input"/> B: Daily virtual call
-            </label>
-          </div>
+          <p><strong>Scenario 1:</strong> Which?</p>
+          <label class="form-check me-3">
+            <input type="radio" name="sc1" value="A" class="form-check-input"/> Weekly in‑person
+          </label>
+          <label class="form-check">
+            <input type="radio" name="sc1" value="B" class="form-check-input"/> Daily virtual call
+          </label>
         </div>
         <div class="scenario border p-3 mb-3">
-          <p><strong>Scenario 2:</strong> Which would you prefer?</p>
-          <div class="d-flex flex-column flex-md-row">
-            <label class="form-check me-3">
-              <input type="radio" name="sc2" value="A" class="form-check-input"/> A: Phone call every two days
-            </label>
-            <label class="form-check">
-              <input type="radio" name="sc2" value="B" class="form-check-input"/> B: Group video chat weekly
-            </label>
-          </div>
+          <p><strong>Scenario 2:</strong> Which?</p>
+          <label class="form-check me-3">
+            <input type="radio" name="sc2" value="A" class="form-check-input"/> Phone call every two days
+          </label>
+          <label class="form-check">
+            <input type="radio" name="sc2" value="B" class="form-check-input"/> Group video chat weekly
+          </label>
         </div>
         <div class="scenario border p-3 mb-3">
-          <p><strong>Scenario 3:</strong> Which would you prefer?</p>
-          <div class="d-flex flex-column flex-md-row">
-            <label class="form-check me-3">
-              <input type="radio" name="sc3" value="A" class="form-check-input"/> A: Monthly community event
-            </label>
-            <label class="form-check">
-              <input type="radio" name="sc3" value="B" class="form-check-input"/> B: Daily app group chat
-            </label>
-          </div>
+          <p><strong>Scenario 3:</strong> Which?</p>
+          <label class="form-check me-3">
+            <input type="radio" name="sc3" value="A" class="form-check-input"/> Monthly community event
+          </label>
+          <label class="form-check">
+            <input type="radio" name="sc3" value="B" class="form-check-input"/> Daily app chat
+          </label>
         </div>
         <button id="submitDCE" class="btn btn-primary">Submit Preferences</button>
         <div id="dceResult" class="mt-3 fs-5"></div>
@@ -148,22 +141,22 @@
 
       <!-- Recommendations -->
       <div class="tab-pane fade" id="recs">
-        <h4>Personalized Recommendations</h4>
+        <h4>Recommendations</h4>
         <div id="recommendations" class="fs-5 mb-4"></div>
 
         <h5>Audio Journal</h5>
         <button id="startAudio" class="btn btn-outline-primary me-2">Start Recording</button>
-        <button id="stopAudio" class="btn btn-outline-danger" disabled>Stop &amp; Analyze</button>
+        <button id="stopAudio" class="btn btn-outline-danger" disabled>Stop &amp; Play</button>
         <div id="audioMsg" class="mt-2"></div>
 
-        <h5 class="mt-4">Set a Reminder</h5>
-        <div class="d-flex flex-column flex-md-row align-items-start mb-3">
+        <h5 class="mt-4">Reminders</h5>
+        <div class="d-flex flex-column flex-md-row mb-3">
           <input type="datetime-local" id="reminderTime" class="form-control w-100 w-md-auto me-md-2 mb-2 mb-md-0"/>
-          <button id="setReminder" class="btn btn-info">Add Reminder</button>
+          <button id="setReminder" class="btn btn-info">Add</button>
         </div>
-        <ul id="reminderList" class="list-group"></ul>
+        <ul id="reminderList" class="list-group mb-4"></ul>
 
-        <h5 class="mt-4">Badges Earned</h5>
+        <h5>Badges</h5>
         <div id="badges" class="mb-3"></div>
       </div>
 
@@ -171,14 +164,12 @@
       <div class="tab-pane fade" id="summary">
         <h4>Summary Report</h4>
         <div id="summaryContent" class="fs-5"></div>
-        <button id="generatePDF" class="btn btn-outline-primary mt-3">Export as PDF</button>
+        <button id="generatePDF" class="btn btn-outline-primary mt-3">Download PDF</button>
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Custom JS -->
   <script src="app.js"></script>
 </body>
 </html>
