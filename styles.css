@@ -1,33 +1,32 @@
 body {
   font-family: 'Roboto', sans-serif;
-  background-color: #f8f9fa;
+  background: #f8f9fa;
 }
 
-h1 {
-  font-weight: 500;
-}
+h1 { font-weight: 500; }
 
-.tab-content {
-  min-height: 300px;
-}
-
-#loginMsg {
-  font-size: 0.9rem;
-}
-
-#riskResult strong {
-  font-size: 1.2rem;
-}
-
-#recommendations ol,
-#dceResult ul {
-  margin-left: 1rem;
-}
-
-.border {
+#scanCanvas {
+  width: 100%;
+  height: 300px;
   background: #fff;
 }
 
-button:disabled {
-  cursor: not-allowed;
+#calArea { position: relative; }
+
+.cal-dot {
+  position: absolute;
+  width: 20px; height: 20px;
+  background: #007bff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.fixation {
+  fill: rgba(255, 0, 0, 0.6);
+}
+
+.badge-box {
+  display: inline-block;
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
 }
