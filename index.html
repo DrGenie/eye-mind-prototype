@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EyeMind Prototype</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet"/>
+  <!-- heatmap.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/heatmapjs@2.0.5/heatmap.min.js"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <div class="container-fluid p-3">
+    <h1 class="text-center mb-4">EyeMind – Hybrid Loneliness Intervention</h1>
+
+    <!-- Nav Tabs -->
+    <ul class="nav nav-tabs" id="mainNav" role="tablist">
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#intro">Introduction</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#instructions">Instructions</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#login">User Login</button></li>
+      <li class="nav-item"><button class="nav-link disabled" data-bs-toggle="tab" data-bs-target="#ai">AI Risk Profile</button></li>
+      <li class="nav-item"><button class="nav-link disabled" data-bs-toggle="tab" data-bs-target="#gaze">Gaze Engagement</button></li>
+      <li class="nav-item"><button class="nav-link disabled" data-bs-toggle="tab" data-bs-target="#dce">DCE Preferences</button></li>
+      <li class="nav-item"><button class="nav-link disabled" data-bs-toggle="tab" data-bs-target="#recs">Recommendations</button></li>
+      <li class="nav-item"><button class="nav-link disabled" data-bs-toggle="tab" data-bs-target="#summary">Summary Report</button></li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content mt-3">
+
+      <!-- Introduction -->
+      <div class="tab-pane fade show active" id="intro">
+        <p>Welcome to EyeMind, a prototype hybrid intervention combining AI, eye-tracking, discrete choice experiments, and in-person integration to help reduce loneliness in older adults.</p>
+      </div>
+
+      <!-- Instructions -->
+      <div class="tab-pane fade" id="instructions">
+        <ol>
+          <li>Click <strong>User Login</strong> and sign in with <code>testuser / welcome123</code>.</li>
+          <li>Complete the <strong>AI Risk Profile</strong> assessment.</li>
+          <li>Explore <strong>Gaze Engagement</strong> by moving your mouse over the image area.</li>
+          <li>Answer the scenarios in <strong>DCE Preferences</strong>.</li>
+          <li>View your <strong>Recommendations</strong>.</li>
+          <li>Review the <strong>Summary Report</strong> or print it.</li>
+        </ol>
+      </div>
+
+      <!-- User Login -->
+      <div class="tab-pane fade" id="login">
+        <form id="loginForm" class="col-md-6 mx-auto">
+          <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input id="username" class="form-control" placeholder="Enter username"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input id="password" type="password" class="form-control" placeholder="Enter password"/>
+          </div>
+          <button id="loginBtn" type="button" class="btn btn-primary">Login</button>
+          <p id="loginMsg" class="mt-2"></p>
+        </form>
+      </div>
+
+      <!-- AI Risk Profile -->
+      <div class="tab-pane fade" id="ai">
+        <h4>Loneliness Risk Assessment</h4>
+        <div class="mb-3">
+          <label>How often do you feel left out?</label><br/>
+          <div class="form-check form-check-inline">
+            <input type="radio" name="q_leftout" value="0" class="form-check-input"/> Never
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" name="q_leftout" value="1" class="form-check-input"/> Sometimes
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" name="q_leftout" value="2" class="form-check-input"/> Often
+          </div>
+        </div>
+        <div class="mb-3">
+          <label>How often do you feel you lack companionship?</label><br/>
+          <div class="form-check form-check-inline">
+            <input type="radio" name="q_companionship" value="0" class="form-check-input"/> Never
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" name="q_companionship" value="1" class="form-check-input"/> Sometimes
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" name="q_companionship" value="2" class="form-check-input"/> Often
+          </div>
+        </div>
+        <button id="calcScoreBtn" class="btn btn-primary">Calculate Risk Score</button>
+        <p id="riskResult" class="mt-3"></p>
+      </div>
+
+      <!-- Gaze Engagement -->
+      <div class="tab-pane fade" id="gaze">
+        <h4>Gaze Engagement Demo</h4>
+        <div id="gazeArea" class="position-relative border mb-2" style="height:300px;">
+          <img src="https://via.placeholder.com/600x300" alt="Content" class="w-100 h-100"/>
+          <div id="gazeDot" style="position:absolute;width:12px;height:12px;background:red;border-radius:50%;display:none;"></div>
+        </div>
+        <button id="toggleHeatmap" class="btn btn-secondary">Show Heatmap</button>
+      </div>
+
+      <!-- DCE Preferences -->
+      <div class="tab-pane fade" id="dce">
+        <h4>DCE: Your Social Preferences</h4>
+        <!-- Scenario 1 -->
+        <div class="mb-4 border p-3 rounded">
+          <p><strong>Scenario 1:</strong> Which do you prefer?</p>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-check">
+                <input type="radio" name="scenario1" value="A" class="form-check-input"/>
+                <label class="form-check-label">A: Weekly in-person cafe meetup</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                <input type="radio" name="scenario1" value="B" class="form-check-input"/>
+                <label class="form-check-label">B: Daily virtual call with a friend</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Scenario 2 -->
+        <div class="mb-4 border p-3 rounded">
+          <p><strong>Scenario 2:</strong> Which do you prefer?</p>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-check">
+                <input type="radio" name="scenario2" value="A" class="form-check-input"/>
+                <label class="form-check-label">A: One-on-one phone call every two days</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                <input type="radio" name="scenario2" value="B" class="form-check-input"/>
+                <label class="form-check-label">B: Group video chat once a week</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Scenario 3 -->
+        <div class="mb-4 border p-3 rounded">
+          <p><strong>Scenario 3:</strong> Which do you prefer?</p>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-check">
+                <input type="radio" name="scenario3" value="A" class="form-check-input"/>
+                <label class="form-check-label">A: Monthly community center event</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                <input type="radio" name="scenario3" value="B" class="form-check-input"/>
+                <label class="form-check-label">B: Daily group chat on app</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button id="submitDCE" class="btn btn-primary">Submit Preferences</button>
+        <div id="dceResult" class="mt-3"></div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="tab-pane fade" id="recs">
+        <h4>Your Personalized Recommendations</h4>
+        <div id="recommendations"></div>
+      </div>
+
+      <!-- Summary Report -->
+      <div class="tab-pane fade" id="summary">
+        <h4>Summary Report</h4>
+        <div id="summaryContent"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bootstrap JS bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS -->
+  <script src="app.js"></script>
+</body>
+</html>
