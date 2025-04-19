@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet"/>
   <!-- heatmap.js -->
   <script src="https://cdn.jsdelivr.net/npm/heatmapjs@2.0.5/heatmap.min.js"></script>
-  <!-- jsPDF for PDF export -->
+  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- Custom Styles -->
   <link rel="stylesheet" href="styles.css"/>
@@ -18,6 +18,7 @@
 <body>
   <div class="container py-4">
     <h1 class="text-center mb-4">EyeMind – Hybrid Loneliness Intervention</h1>
+
     <!-- Nav Tabs -->
     <ul class="nav nav-tabs" id="mainNav" role="tablist">
       <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#intro">Introduction</button></li>
@@ -33,20 +34,18 @@
     <div class="tab-content mt-3">
       <!-- Introduction -->
       <div class="tab-pane fade show active" id="intro">
-        <p>This app demonstrates EyeMind: combining AI risk scoring, advanced gaze analytics, preference elicitation (DCE), audio journalling, calendar reminders, PDF sharing and gamified badges to combat loneliness in older adults.</p>
+        <p>This prototype brings together AI risk scoring, advanced gaze analytics (with calibration, fixations & heatmap), discrete choice experiments, audio journalling, calendar reminders, PDF sharing, and gamified badges to combat loneliness in older adults.</p>
       </div>
 
       <!-- Instructions -->
       <div class="tab-pane fade" id="instructions">
         <ol>
-          <li>Go to <strong>Login</strong> and sign in with <code>testuser / welcome123</code>.</li>
-          <li>Complete the <strong>AI Risk</strong> questionnaire.</li>
-          <li>Calibrate and explore <strong>Gaze Engagement</strong>.</li>
-          <li>Answer scenarios in <strong>DCE</strong>.</li>
-          <li>Record a short <strong>Audio Journal</strong> entry.</li>
-          <li>Set a social <strong>Reminder</strong> in the calendar.</li>
-          <li>View your <strong>Recommendations</strong> and earn <strong>Badges</strong>.</li>
-          <li>Review or share the <strong>Summary</strong> as PDF.</li>
+          <li>Navigate to <strong>Login</strong> and sign in with <code>testuser / welcome123</code>.</li>
+          <li>Complete the <strong>AI Risk</strong> questionnaire and view your risk level.</li>
+          <li>Go to <strong>Gaze Engagement</strong>: calibrate, track your gaze, view stats & heatmap.</li>
+          <li>Answer the scenarios in <strong>DCE</strong> to capture your social preferences.</li>
+          <li>Visit <strong>Recommendations</strong> for personalised suggestions, record a short audio journal & set reminders.</li>
+          <li>Check your earned <em>Badges</em> and review your <strong>Summary</strong>. Export as PDF or share with caregivers.</li>
         </ol>
       </div>
 
@@ -70,43 +69,41 @@
       <div class="tab-pane fade" id="ai">
         <h4>Loneliness Risk Assessment</h4>
         <div class="mb-3">
-          <label>How often feel left out?</label><br/>
-          <select id="q1" class="form-select w-auto d-inline-block">
+          <label>How often do you feel left out?</label>
+          <select id="q1" class="form-select w-100 my-1">
             <option value="0">Never</option>
             <option value="1">Sometimes</option>
             <option value="2">Often</option>
           </select>
         </div>
         <div class="mb-3">
-          <label>How often lack companionship?</label><br/>
-          <select id="q2" class="form-select w-auto d-inline-block">
+          <label>How often do you lack companionship?</label>
+          <select id="q2" class="form-select w-100 my-1">
             <option value="0">Never</option>
             <option value="1">Sometimes</option>
             <option value="2">Often</option>
           </select>
         </div>
         <button id="calcScoreBtn" class="btn btn-primary">Calculate Risk</button>
-        <p id="riskResult" class="mt-3"></p>
+        <p id="riskResult" class="mt-3 fs-5"></p>
       </div>
 
       <!-- Gaze Engagement -->
       <div class="tab-pane fade" id="gaze">
         <h4>Gaze Engagement & Calibration</h4>
-        <p id="calMsg">Click <strong>Calibrate</strong> to begin.</p>
+        <p id="calMsg">Press <strong>Calibrate</strong> and click all four dots.</p>
         <button id="startCal" class="btn btn-secondary mb-2">Calibrate</button>
-        <div id="calArea" class="position-relative border mb-2" style="height:300px;background:#fff;">
-          <!-- calibration dots inserted here -->
-        </div>
+        <div id="calArea" class="position-relative border mb-2" style="height:300px;"></div>
         <div id="gazeControls" class="d-none">
           <button id="startGaze" class="btn btn-success me-2">Start Tracking</button>
           <button id="stopGaze" class="btn btn-danger me-2" disabled>Stop</button>
           <button id="toggleHeatmap" class="btn btn-secondary">Show Heatmap</button>
         </div>
         <div class="row mt-3">
-          <div class="col-md-6">
-            <canvas id="scanCanvas" class="border"></canvas>
+          <div class="col-12 mb-2">
+            <canvas id="scanCanvas" class="w-100 border" style="height:200px;"></canvas>
           </div>
-          <div class="col-md-6">
+          <div class="col-12">
             <div id="gazeStats" class="p-2 border bg-light"></div>
           </div>
         </div>
@@ -115,32 +112,75 @@
       <!-- DCE Preferences -->
       <div class="tab-pane fade" id="dce">
         <h4>Discrete Choice Experiment</h4>
-        <!-- scenarios as before... -->
-        <!-- omitted for brevity (same structure as prior code) -->
+        <!-- Scenario blocks -->
+        <div class="scenario border p-3 mb-3">
+          <p><strong>Scenario 1:</strong> Which would you prefer?</p>
+          <div class="d-flex flex-column flex-md-row">
+            <label class="form-check me-3">
+              <input type="radio" name="sc1" value="A" class="form-check-input"/> A: Weekly in‑person café meetup
+            </label>
+            <label class="form-check">
+              <input type="radio" name="sc1" value="B" class="form-check-input"/> B: Daily virtual call with a friend
+            </label>
+          </div>
+        </div>
+        <div class="scenario border p-3 mb-3">
+          <p><strong>Scenario 2:</strong> Which would you prefer?</p>
+          <div class="d-flex flex-column flex-md-row">
+            <label class="form-check me-3">
+              <input type="radio" name="sc2" value="A" class="form-check-input"/> A: One‑on‑one phone call every two days
+            </label>
+            <label class="form-check">
+              <input type="radio" name="sc2" value="B" class="form-check-input"/> B: Group video chat once a week
+            </label>
+          </div>
+        </div>
+        <div class="scenario border p-3 mb-3">
+          <p><strong>Scenario 3:</strong> Which would you prefer?</p>
+          <div class="d-flex flex-column flex-md-row">
+            <label class="form-check me-3">
+              <input type="radio" name="sc3" value="A" class="form-check-input"/> A: Monthly community centre event
+            </label>
+            <label class="form-check">
+              <input type="radio" name="sc3" value="B" class="form-check-input"/> B: Daily group chat on app
+            </label>
+          </div>
+        </div>
+        <button id="submitDCE" class="btn btn-primary">Submit Preferences</button>
+        <div id="dceResult" class="mt-3 fs-5"></div>
       </div>
 
       <!-- Recommendations -->
       <div class="tab-pane fade" id="recs">
         <h4>Personalized Recommendations</h4>
-        <div id="recommendations"></div>
+        <div id="recommendations" class="fs-5 mb-4"></div>
+
+        <h5>Audio Journal</h5>
+        <button id="startAudio" class="btn btn-outline-primary me-2">Start Recording</button>
+        <button id="stopAudio" class="btn btn-outline-danger" disabled>Stop & Analyze</button>
+        <p id="audioMsg" class="mt-2"></p>
+
+        <h5 class="mt-4">Set a Reminder</h5>
+        <div class="d-flex flex-column flex-md-row align-items-start mb-3">
+          <input type="datetime-local" id="reminderTime" class="form-control w-100 w-md-auto me-md-2 mb-2 mb-md-0"/>
+          <button id="setReminder" class="btn btn-info">Add Reminder</button>
+        </div>
+        <ul id="reminderList" class="list-group"></ul>
+
         <h5 class="mt-4">Badges Earned</h5>
-        <div id="badges" class="mb-4"></div>
-        <h5>Set a Reminder</h5>
-        <input type="datetime-local" id="reminderTime" class="form-control w-auto d-inline-block"/>
-        <button id="setReminder" class="btn btn-info ms-2">Add</button>
-        <ul id="reminderList" class="mt-2"></ul>
+        <div id="badges" class="mb-3"></div>
       </div>
 
       <!-- Summary -->
       <div class="tab-pane fade" id="summary">
         <h4>Summary Report</h4>
-        <div id="summaryContent"></div>
-        <button id="generatePDF" class="btn btn-outline-primary mt-3">Share as PDF</button>
+        <div id="summaryContent" class="fs-5"></div>
+        <button id="generatePDF" class="btn btn-outline-primary mt-3">Export as PDF</button>
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap JS & Popper -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Custom JS -->
   <script src="app.js"></script>
