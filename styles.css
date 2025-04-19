@@ -2,14 +2,37 @@ body {
   font-family: 'Roboto', sans-serif;
   background: #f8f9fa;
 }
-h1 { font-weight: 500; }
-#scanCanvas { width:100%!important; height:200px!important; }
-#calArea { height:300px; background:#fff; position:relative; }
-.cal-dot {
-  position:absolute; width:20px; height:20px;
-  background:#007bff; border-radius:50%;
-  cursor:pointer;
+h1 {
+  font-weight: 500;
 }
-#recommendations ol { margin-left:1rem; }
-ul.list-group { max-width:400px; }
-@media (max-width:576px) { .nav-tabs { font-size:0.9rem; } }
+#loginMsg {
+  font-size: 0.95rem;
+}
+.scenario {
+  background: #ffffff;
+}
+#scanCanvas {
+  width: 100% !important;
+  height: 200px !important;
+}
+#calArea {
+  height: 300px;
+  background: #fff;
+  position: relative;
+}
+.cal-dot {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #007bff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+ul.list-group {
+  max-width: 400px;
+}
+@media (max-width: 576px) {
+  .nav-tabs {
+    font-size: 0.9rem;
+  }
+}
