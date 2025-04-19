@@ -2,90 +2,106 @@
 // EyeMind Web App – Full Implementation
 // ----------------------------------
 
-// --- Login & Security ---
-const VALID_USER = 'testuser';
-const VALID_PASS = 'welcome123';
+// LOGIN & TAB CONTROL
+const VALID_USER = 'testuser', VALID_PASS = 'welcome123';
 let failedAttempts = 0, reminders = [], badges = [];
 
 const loginForm    = document.getElementById('loginForm');
 const loginMsg     = document.getElementById('loginMsg');
 const securityTips = document.getElementById('securityTips');
+const loginSection = document.getElementById('loginSection');
 const appContent   = document.getElementById('appContent');
+const navLinks     = document.querySelectorAll('#mainNav .nav-link');
 
+// Remove 'disabled' class helper
+function enableTab(selector){
+  const btn = document.querySelector(`[data-bs-target="${selector}"]`);
+  btn.classList.remove('disabled');
+}
+
+// Switch tab helper
+function showTab(selector){
+  new bootstrap.Tab(document.querySelector(`[data-bs-target="${selector}"]`)).show();
+}
+
+// Show messages
+function showError(msg){
+  loginMsg.innerText = msg; loginMsg.className = 'text-danger';
+}
+function showSuccess(msg){
+  loginMsg.innerText = msg; loginMsg.className = 'text-success';
+}
+
+// On login
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
   const user = document.getElementById('username').value.trim();
   const pass = document.getElementById('password').value;
-  if (!user || !pass) {
-    showError('Please enter both username and password.');
+  if (!user||!pass) {
+    showError('Enter both username and password.');
     return;
   }
   if (user===VALID_USER && pass===VALID_PASS) {
     showSuccess('Login successful!');
     failedAttempts = 0;
     securityTips.classList.add('d-none');
+    // enable AI Risk tab
+    enableTab('#ai');
     setTimeout(() => {
-      document.getElementById('loginSection').classList.add('d-none');
+      loginSection.classList.add('d-none');
       appContent.classList.remove('d-none');
-      activateTab('#ai');
+      showTab('#ai');
       awardBadge('Social Starter');
     }, 500);
   } else {
     failedAttempts++;
-    if (failedAttempts>=5) {
+    if (failedAttempts >= 5) {
       loginForm.querySelector('button').disabled = true;
-      showError('Account locked after 5 failed attempts. Contact support.');
+      showError('Locked after 5 failed attempts. Contact support.');
       securityTips.classList.remove('d-none');
-    } else if (failedAttempts>=3) {
-      showError(`Invalid credentials (${failedAttempts}/5). Possible attack?`);
+    } else if (failedAttempts >= 3) {
+      showError(`Invalid (${failedAttempts}/5). Possible attack?`);
       securityTips.classList.remove('d-none');
     } else {
-      showError(`Invalid credentials (${failedAttempts}/5).`);
+      showError(`Invalid (${failedAttempts}/5).`);
     }
   }
 });
-function showError(msg){
-  loginMsg.innerText = msg;
-  loginMsg.className  = 'text-danger';
-}
-function showSuccess(msg){
-  loginMsg.innerText = msg;
-  loginMsg.className  = 'text-success';
-}
-function activateTab(sel){
-  new bootstrap.Tab(document.querySelector(`[data-bs-target="${sel}"]`)).show();
-}
 
 // ----------------------------------
 // AI Risk Assessment
 // ----------------------------------
 const calcScoreBtn = document.getElementById('calcScoreBtn');
 const riskResult   = document.getElementById('riskResult');
+
 calcScoreBtn.onclick = () => {
   const v1 = +document.getElementById('q1').value;
   const v2 = +document.getElementById('q2').value;
   const score = v1 + v2;
-  const level = score<=1?'Low':score<=2?'Moderate':'High';
-  riskResult.innerHTML  = `<strong>${level}</strong> risk (Score ${score}/4)`;
-  riskResult.className  = (level==='High'?'text-danger ':'text-success ')+'fs-5';
+  const level = score <= 1 ? 'Low' : score <= 2 ? 'Moderate' : 'High';
+  riskResult.innerHTML = `<strong>${level}</strong> risk (Score ${score}/4)`;
+  riskResult.className = (level==='High'?'text-danger ':'text-success ') + 'fs-5';
+  // enable Gaze Engagement
+  enableTab('#gaze');
 };
 
 // ----------------------------------
 // Gaze Engagement & Calibration
 // ----------------------------------
-const calArea           = document.getElementById('calArea');
-const calMsg            = document.getElementById('calMsg');
-const gazeControls      = document.getElementById('gazeControls');
-const startCal          = document.getElementById('startCal');
-const startGaze         = document.getElementById('startGaze');
-const stopGaze          = document.getElementById('stopGaze');
-const toggleHeatmapBtn  = document.getElementById('toggleHeatmap');
-const scanCanvas        = document.getElementById('scanCanvas');
-const gazeStats         = document.getElementById('gazeStats');
+const calArea          = document.getElementById('calArea');
+const calMsg           = document.getElementById('calMsg');
+const gazeControls     = document.getElementById('gazeControls');
+const startCal         = document.getElementById('startCal');
+const startGaze        = document.getElementById('startGaze');
+const stopGaze         = document.getElementById('stopGaze');
+const toggleHeatmapBtn = document.getElementById('toggleHeatmap');
+const scanCanvas       = document.getElementById('scanCanvas');
+const gazeStats        = document.getElementById('gazeStats');
+
 let heatmap, calibrated=false, tracking=false, heatmapVisible=false;
 let gazeData=[], fixations=[], lastPos=null, fixStart=null, lastTime=0;
 
-// Resize canvas for high DPI & responsiveness
+// Resize scan canvas
 function resizeCanvas(){
   scanCanvas.width  = scanCanvas.clientWidth;
   scanCanvas.height = 200;
@@ -93,17 +109,17 @@ function resizeCanvas(){
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// Calibration routine
+// Calibration
 startCal.onclick = () => {
-  calMsg.innerText = 'Click all 4 dots to calibrate.';
+  calMsg.innerText = 'Tap each dot to calibrate.';
   calArea.innerHTML = `
     <img src="https://via.placeholder.com/600x300" class="w-100 h-100" alt="Content"/>
     <div id="heatmapContainer" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
-    <div id="gazeDot" style="position:absolute;width:12px;height:12px;
-         background:red;border-radius:50%;display:none;pointer-events:none;"></div>`;
+    <div id="gazeDot" style="position:absolute;width:12px;height:12px;background:red;
+         border-radius:50%;display:none;pointer-events:none;"></div>`;
   gazeControls.classList.add('d-none');
   calibrated = false;
-  gazeData=[]; fixations=[];
+  gazeData = []; fixations = [];
   const pts = [
     {left:'10%', top:'10%'},
     {left:'90%', top:'10%'},
@@ -111,9 +127,9 @@ startCal.onclick = () => {
     {left:'10%', top:'90%'}
   ];
   let count=0;
-  pts.forEach(pt=>{
+  pts.forEach(pt => {
     const d = document.createElement('div');
-    d.className='cal-dot';
+    d.className = 'cal-dot';
     d.style.left = pt.left;
     d.style.top  = pt.top;
     d.onclick = () => {
@@ -122,13 +138,14 @@ startCal.onclick = () => {
         calibrated=true;
         calMsg.innerText='Calibration complete!';
         gazeControls.classList.remove('d-none');
+        enableTab('#dce'); // enable DCE once calibrated
       }
     };
     calArea.appendChild(d);
   });
 };
 
-// Start tracking gaze via mouse movements
+// Gaze tracking
 startGaze.onclick = () => {
   if (!calibrated) return alert('Please calibrate first.');
   tracking = true;
@@ -138,62 +155,60 @@ startGaze.onclick = () => {
   heatmap = h337.create({ container: document.getElementById('heatmapContainer'), radius:30 });
 };
 
-// Stop tracking and compute stats
 stopGaze.onclick = () => {
   tracking = false;
   startGaze.disabled = false;
   stopGaze.disabled  = true;
   calArea.onmousemove = null;
   updateGazeStats();
+  enableTab('#dce'); // ensure DCE is enabled
 };
 
-// Toggle heatmap overlay
 toggleHeatmapBtn.onclick = () => {
   heatmapVisible = !heatmapVisible;
   toggleHeatmapBtn.innerText = heatmapVisible?'Reset Heatmap':'Show Heatmap';
-  if (heatmapVisible) heatmap.setData({max:10, data: gazeData});
-  else document.getElementById('heatmapContainer').innerHTML = '';
+  if (heatmapVisible) heatmap.setData({ max:10, data: gazeData });
+  else document.getElementById('heatmapContainer').innerHTML='';
 };
 
 function handleGaze(e){
   const x=e.offsetX, y=e.offsetY, t=Date.now();
-  gazeData.push({x,y,value:1});
+  gazeData.push({ x,y,value:1 });
   const ctx = scanCanvas.getContext('2d');
   ctx.fillStyle='rgba(255,0,0,0.6)';
   ctx.beginPath();
-  ctx.arc(x/600*scanCanvas.width, y/300*scanCanvas.height, 4,0,2*Math.PI);
+  ctx.arc(x/600*scanCanvas.width, y/300*scanCanvas.height, 4, 0,2*Math.PI);
   ctx.fill();
   if (lastPos && tracking) {
     const dist = Math.hypot(x-lastPos.x, y-lastPos.y);
     if (dist<30) {
-      if (!fixStart) fixStart={x:lastPos.x,y:lastPos.y,t:lastTime};
+      if (!fixStart) fixStart = { x:lastPos.x, y:lastPos.y, t:lastTime };
     } else if (fixStart) {
-      fixations.push({x:fixStart.x, y:fixStart.y, dur:lastTime-fixStart.t});
-      fixStart=null;
+      fixations.push({ x:fixStart.x, y:fixStart.y, dur:lastTime-fixStart.t });
+      fixStart = null;
     }
   }
   const dot = document.getElementById('gazeDot');
   dot.style.display='block'; dot.style.left=`${x}px`; dot.style.top=`${y}px`;
-  lastPos={x,y}; lastTime=t;
+  lastPos={ x,y }; lastTime = t;
 }
 
-// Compute and display gaze statistics
 function updateGazeStats(){
-  if (fixStart) fixations.push({x:fixStart.x, y:fixStart.y, dur:Date.now()-fixStart.t});
+  if (fixStart) fixations.push({ x:fixStart.x, y:fixStart.y, dur:Date.now()-fixStart.t });
   const c = fixations.length;
-  const avgDur = c ? fixations.reduce((s,f)=>s+f.dur,0)/c : 0;
-  let sacSum=0;
+  const avgDur = c ? (fixations.reduce((s,f)=>s+f.dur,0)/c).toFixed(0) : 0;
+  let sacSum = 0;
   for (let i=1; i<fixations.length; i++){
     sacSum += Math.hypot(
       fixations[i].x - fixations[i-1].x,
       fixations[i].y - fixations[i-1].y
     );
   }
-  const avgSac = fixations.length>1 ? sacSum/(fixations.length-1) : 0;
+  const avgSac = fixations.length>1 ? (sacSum/(fixations.length-1)).toFixed(1) : 0;
   gazeStats.innerHTML = `
     <p><strong>Fixations:</strong> ${c}</p>
-    <p><strong>Avg duration:</strong> ${avgDur.toFixed(0)} ms</p>
-    <p><strong>Avg saccade:</strong> ${avgSac.toFixed(1)} px</p>`;
+    <p><strong>Avg duration:</strong> ${avgDur} ms</p>
+    <p><strong>Avg saccade:</strong> ${avgSac}px</p>`;
 }
 
 // ----------------------------------
@@ -204,22 +219,23 @@ document.getElementById('submitDCE').onclick = ()=>{
   const c2 = document.querySelector('input[name="sc2"]:checked')?.value;
   const c3 = document.querySelector('input[name="sc3"]:checked')?.value;
   let v=0,i=0,g=0,h=0,l=0;
-  if(c1==='A'){i++;l++;g++;} else if(c1==='B'){v++;h++;}
-  if(c2==='A'){g++;h++;}   else if(c2==='B'){g++;l++;}
-  if(c3==='A'){i++;l++;}   else if(c3==='B'){v++;h++;}
-  const modePref  = v>=i ? 'Virtual' : 'In-Person';
-  const sizePref  = g>=1 ? 'Group'   : 'One-on-One';
-  const freqPref  = h>=l ? 'Frequent': 'Less Frequent';
+  if(c1==='A'){ i++; l++; g++; } else { v++; h++; }
+  if(c2==='A'){ g++; h++; } else { g++; l++; }
+  if(c3==='A'){ i++; l++; } else { v++; h++; }
+  const modePref = v>=i ? 'Virtual'     : 'In-Person';
+  const sizePref = g>=1 ? 'Group'       : 'One-on-One';
+  const freqPref = h>=l ? 'Frequent'    : 'Less Frequent';
   document.getElementById('dceResult').innerHTML = `
     <ul>
       <li><strong>Mode:</strong> ${modePref}</li>
       <li><strong>Setting:</strong> ${sizePref}</li>
       <li><strong>Frequency:</strong> ${freqPref}</li>
     </ul>`;
+  enableTab('#recs');
 };
 
 // ----------------------------------
-// Recommendations, Audio, Reminders, Badges, PDF
+// Recommendations & Audio & Reminders & Badges & PDF
 // ----------------------------------
 function awardBadge(name){
   if (badges.includes(name)) return;
@@ -234,25 +250,23 @@ document.querySelector('[data-bs-target="#recs"]').addEventListener('shown.bs.ta
   const recs = [];
   const rl = document.getElementById('riskResult').innerText.split(' ')[0];
   if (rl==='High') {
-    recs.push(
-      document.getElementById('recommendations').innerHTML=
-      '<ol><li>' +
-      (modePref==='Virtual'?
-       'Join a daily online support group.':
-       'Attend a weekly community meetup.') +
-      '</li></ol>'
-    );
+    recs.push('<li>' + (document.querySelector('input[name="sc1"]:checked').value==='A'
+      ? 'Attend a local weekly meetup.'
+      : 'Join a daily online support group.') + '</li>');
   }
-  // ...similar logic for Moderate/Low...
+  // Add more logic for Moderate/Low...
+  document.getElementById('recommendations').innerHTML = `<ol>${recs.join('')}</ol>`;
+  awardBadge('Recommendations Viewed');
+  enableTab('#summary');
 });
 
-// Audio journalling
+// Audio journal
 let recorder, audioChunks = [];
 navigator.mediaDevices.getUserMedia({audio:true})
   .then(stream => {
     recorder = new MediaRecorder(stream);
-    recorder.ondataavailable = e => audioChunks.push(e.data);
-    recorder.onstop = () => {
+    recorder.ondataavailable = e=> audioChunks.push(e.data);
+    recorder.onstop = ()=>{
       const blob = new Blob(audioChunks,{type:'audio/webm'});
       const url  = URL.createObjectURL(blob);
       document.getElementById('audioMsg').innerHTML =
@@ -262,13 +276,13 @@ navigator.mediaDevices.getUserMedia({audio:true})
   });
 
 document.getElementById('startAudio').onclick = ()=> {
-  audioChunks = []; recorder.start();
-  startAudio.disabled = true; stopAudio.disabled = false;
+  audioChunks=[]; recorder.start();
+  startAudio.disabled=true; stopAudio.disabled=false;
   document.getElementById('audioMsg').innerText = 'Recording…';
 };
 document.getElementById('stopAudio').onclick = ()=> {
   recorder.stop();
-  startAudio.disabled = false; stopAudio.disabled = true;
+  startAudio.disabled=false; stopAudio.disabled=true;
 };
 
 // Reminders
@@ -277,7 +291,7 @@ document.getElementById('setReminder').onclick = ()=> {
   if (!dt) return;
   reminders.push(dt);
   const li = document.createElement('li');
-  li.className = 'list-group-item';
+  li.className='list-group-item';
   li.innerText = new Date(dt).toLocaleString();
   document.getElementById('reminderList').appendChild(li);
   awardBadge('Planner');
@@ -285,13 +299,12 @@ document.getElementById('setReminder').onclick = ()=> {
 
 // Summary & PDF
 document.querySelector('[data-bs-target="#summary"]').addEventListener('shown.bs.tab', ()=>{
-  const sum = `
-    <h5>Risk Level:</h5><p>${riskResult.innerText}</p>
+  const summaryHTML = `
+    <h5>Risk Level:</h5><p>${document.getElementById('riskResult').innerText}</p>
     <h5>Preferences:</h5>${document.getElementById('dceResult').innerHTML}
     <h5>Badges:</h5><p>${badges.join(', ')}</p>
-    <h5>Reminders:</h5><ul>${reminders.map(r=>`<li>${new Date(r).toLocaleString()}</li>`).join('')}</ul>
-  `;
-  document.getElementById('summaryContent').innerHTML = sum;
+    <h5>Reminders:</h5><ul>${reminders.map(r=>`<li>${new Date(r).toLocaleString()}</li>`).join('')}</ul>`;
+  document.getElementById('summaryContent').innerHTML = summaryHTML;
 });
 document.getElementById('generatePDF').onclick = ()=>{
   const { jsPDF } = window.jspdf;
