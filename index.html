@@ -4,22 +4,22 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>EyeMind – Comprehensive Prototype</title>
-  <!-- Bootstrap CSS -->
+  <!-- Bootstrap for responsive layout -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet"/>
-  <!-- heatmap.js -->
+  <!-- heatmap.js for gaze heatmaps -->
   <script src="https://cdn.jsdelivr.net/npm/heatmapjs@2.0.5/heatmap.min.js"></script>
-  <!-- jsPDF -->
+  <!-- jsPDF for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
   <div class="container py-4">
-    <h1 class="text-center mb-4">EyeMind – Hybrid Loneliness Intervention</h1>
 
-    <!-- Login Section -->
+    <!-- LOGIN SECTION -->
     <div id="loginSection" class="col-md-6 mx-auto mb-5">
+      <h2 class="mb-3">Secure Login</h2>
       <form id="loginForm" novalidate>
         <div class="mb-3">
           <label for="username" class="form-label">Username</label>
@@ -35,15 +35,16 @@
       <div id="securityTips" class="mt-4 alert alert-secondary d-none">
         <h6>Security Tips</h6>
         <ul>
-          <li>Ensure you’re on HTTPS.</li>
-          <li>Use a strong, unique password.</li>
-          <li>Don’t share your credentials.</li>
-          <li>If you suspect a breach, reset your password immediately.</li>
+          <li>Always use <strong>HTTPS</strong> to protect your data in transit.</li>
+          <li>Choose a strong, unique password you don’t reuse elsewhere.</li>
+          <li>Never share your credentials with anyone.</li>
+          <li>If you suspect an account breach, reset your password immediately.</li>
+          <li>Consider enabling two‑factor authentication for extra security.</li>
         </ul>
       </div>
     </div>
 
-    <!-- Main App -->
+    <!-- MAIN APP CONTENT -->
     <div id="appContent" class="d-none">
       <ul class="nav nav-tabs" id="mainNav" role="tablist">
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#intro">Introduction</button></li>
@@ -56,27 +57,38 @@
       </ul>
 
       <div class="tab-content mt-3">
-        <!-- Introduction Tab -->
+
+        <!-- Introduction -->
         <div class="tab-pane fade show active" id="intro">
-          <p>EyeMind identifies loneliness risk, learns your social preferences, measures engagement through gaze, and offers audio journalling, actionable reminders, PDF sharing, and gamified badges to foster meaningful connections.</p>
+          <h3>Welcome to EyeMind</h3>
+          <p>
+            EyeMind combines AI‑driven loneliness risk assessment, gaze engagement analytics,
+            preference elicitation (DCE), audio journalling, reminders, PDF sharing, and gamified badges
+            to help older adults stay connected and supported.
+          </p>
         </div>
 
-        <!-- Instructions Tab -->
+        <!-- Instructions -->
         <div class="tab-pane fade" id="instructions">
+          <h3>How to Use</h3>
           <ol>
-            <li>Use the <strong>AI Risk</strong> tab to calculate your loneliness level.</li>
-            <li>In <strong>Gaze Engagement</strong>, calibrate and track your attention.</li>
-            <li>Answer scenarios in <strong>DCE</strong> to reveal preferences.</li>
-            <li>View <strong>Recommendations</strong>, record an <strong>Audio Journal</strong>, and set Reminders.</li>
-            <li>Earn <em>Badges</em> and review your <strong>Summary</strong>. Export as PDF.</li>
+            <li>Complete the <strong>AI Risk</strong> assessment.</li>
+            <li>Calibrate and track your attention in <strong>Gaze Engagement</strong>.</li>
+            <li>Answer social preference scenarios under <strong>DCE</strong>.</li>
+            <li>Review <strong>Recommendations</strong>, record an <strong>Audio Journal</strong>, and set reminders.</li>
+            <li>Earn <em>Badges</em> and review or share your <strong>Summary</strong> as a PDF.</li>
           </ol>
         </div>
 
-        <!-- AI Risk Tab -->
+        <!-- AI Risk -->
         <div class="tab-pane fade" id="ai">
-          <h4>Loneliness Risk Assessment</h4>
+          <h3>Loneliness Risk Assessment</h3>
+          <p>
+            We use a brief validated scale (adapted UCLA) to estimate your current loneliness risk.
+            Your responses help us tailor support to you.
+          </p>
           <div class="mb-3">
-            <label>Feel left out?</label>
+            <label>How often do you feel left out?</label>
             <select id="q1" class="form-select my-1">
               <option value="0">Never</option>
               <option value="1">Sometimes</option>
@@ -84,7 +96,7 @@
             </select>
           </div>
           <div class="mb-3">
-            <label>Lack companionship?</label>
+            <label>How often do you lack companionship?</label>
             <select id="q2" class="form-select my-1">
               <option value="0">Never</option>
               <option value="1">Sometimes</option>
@@ -95,13 +107,13 @@
           <p id="riskResult" class="mt-3 fs-5"></p>
         </div>
 
-        <!-- Gaze Engagement Tab -->
+        <!-- Gaze Engagement -->
         <div class="tab-pane fade" id="gaze">
-          <h4>Gaze Engagement & Calibration</h4>
-          <p id="calMsg">Click “Calibrate” and tap each dot.</p>
+          <h3>Gaze Engagement &amp; Calibration</h3>
+          <p id="calMsg">Press <strong>Calibrate</strong> and tap each dot to map your gaze.</p>
           <button id="startCal" class="btn btn-secondary mb-2">Calibrate</button>
           <div id="calArea" class="border mb-2 position-relative">
-            <img src="https://via.placeholder.com/600x300" class="w-100 h-100" alt="Content"/>
+            <img src="https://via.placeholder.com/600x300" class="w-100 h-100" alt="Demo content"/>
             <div id="heatmapContainer" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
             <div id="gazeDot" style="position:absolute;width:12px;height:12px;background:red;border-radius:50%;display:none;pointer-events:none;"></div>
           </div>
@@ -114,31 +126,34 @@
           <div id="gazeStats" class="p-2 border bg-light"></div>
         </div>
 
-        <!-- DCE Tab -->
+        <!-- DCE Preferences -->
         <div class="tab-pane fade" id="dce">
-          <h4>Discrete Choice Experiment</h4>
+          <h3>Discrete Choice Experiment</h3>
+          <p>
+            Tell us what social formats you prefer. We’ll use your choices to recommend activities you’ll enjoy.
+          </p>
           <div class="scenario border p-3 mb-3">
-            <p><strong>Scenario 1:</strong></p>
+            <p><strong>Scenario 1:</strong> Which do you prefer?</p>
             <label class="form-check me-3">
-              <input type="radio" name="sc1" value="A" class="form-check-input"/> Weekly in‑person
+              <input type="radio" name="sc1" value="A" class="form-check-input"/> Weekly in‑person meetup
             </label>
             <label class="form-check">
-              <input type="radio" name="sc1" value="B" class="form-check-input"/> Daily virtual
+              <input type="radio" name="sc1" value="B" class="form-check-input"/> Daily virtual call
             </label>
           </div>
           <div class="scenario border p-3 mb-3">
             <p><strong>Scenario 2:</strong></p>
             <label class="form-check me-3">
-              <input type="radio" name="sc2" value="A" class="form-check-input"/> Phone every 2 days
+              <input type="radio" name="sc2" value="A" class="form-check-input"/> Phone call every 2 days
             </label>
             <label class="form-check">
-              <input type="radio" name="sc2" value="B" class="form-check-input"/> Group video weekly
+              <input type="radio" name="sc2" value="B" class="form-check-input"/> Group video chat weekly
             </label>
           </div>
           <div class="scenario border p-3 mb-3">
             <p><strong>Scenario 3:</strong></p>
             <label class="form-check me-3">
-              <input type="radio" name="sc3" value="A" class="form-check-input"/> Monthly event
+              <input type="radio" name="sc3" value="A" class="form-check-input"/> Monthly community event
             </label>
             <label class="form-check">
               <input type="radio" name="sc3" value="B" class="form-check-input"/> Daily app chat
@@ -148,9 +163,9 @@
           <div id="dceResult" class="mt-3 fs-5"></div>
         </div>
 
-        <!-- Recommendations Tab -->
+        <!-- Recommendations -->
         <div class="tab-pane fade" id="recs">
-          <h4>Recommendations</h4>
+          <h3>Personalized Recommendations</h3>
           <div id="recommendations" class="fs-5 mb-4"></div>
 
           <h5>Audio Journal</h5>
@@ -169,9 +184,9 @@
           <div id="badges" class="mb-3"></div>
         </div>
 
-        <!-- Summary Tab -->
+        <!-- Summary -->
         <div class="tab-pane fade" id="summary">
-          <h4>Summary Report</h4>
+          <h3>Summary Report</h3>
           <div id="summaryContent" class="fs-5"></div>
           <button id="generatePDF" class="btn btn-outline-primary mt-3">Download PDF</button>
         </div>
@@ -179,8 +194,9 @@
     </div>
   </div>
 
-  <!-- Bootstrap JS -->
+  <!-- Bootstrap JS bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- App Logic -->
   <script src="app.js"></script>
 </body>
 </html>
