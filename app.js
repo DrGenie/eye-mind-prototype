@@ -6,46 +6,50 @@
 const VALID_USER = 'testuser', VALID_PASS = 'welcome123';
 let failedAttempts = 0, reminders = [], badges = [];
 
+// DOM ELEMENTS
 const loginForm    = document.getElementById('loginForm');
 const loginMsg     = document.getElementById('loginMsg');
 const securityTips = document.getElementById('securityTips');
 const loginSection = document.getElementById('loginSection');
 const appContent   = document.getElementById('appContent');
-const navLinks     = document.querySelectorAll('#mainNav .nav-link');
 
-// Remove 'disabled' class helper
-function enableTab(selector){
+// Enable a tab button by selector (#ai, #gaze, #dce, #recs, #summary)
+function enableTab(selector) {
   const btn = document.querySelector(`[data-bs-target="${selector}"]`);
+  if (!btn) return;
+  btn.removeAttribute('disabled');
   btn.classList.remove('disabled');
 }
 
-// Switch tab helper
-function showTab(selector){
-  new bootstrap.Tab(document.querySelector(`[data-bs-target="${selector}"]`)).show();
+// Show a tab
+function showTab(selector) {
+  new bootstrap.Tab(document.querySelector(`[ data-bs-target="${selector}" ]`)).show();
 }
 
-// Show messages
-function showError(msg){
-  loginMsg.innerText = msg; loginMsg.className = 'text-danger';
+// Show error and success messages
+function showError(msg) {
+  loginMsg.innerText = msg;
+  loginMsg.className = 'text-danger';
 }
-function showSuccess(msg){
-  loginMsg.innerText = msg; loginMsg.className = 'text-success';
+function showSuccess(msg) {
+  loginMsg.innerText = msg;
+  loginMsg.className = 'text-success';
 }
 
-// On login
+// Handle login
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
   const user = document.getElementById('username').value.trim();
   const pass = document.getElementById('password').value;
-  if (!user||!pass) {
+  if (!user || !pass) {
     showError('Enter both username and password.');
     return;
   }
-  if (user===VALID_USER && pass===VALID_PASS) {
+  if (user === VALID_USER && pass === VALID_PASS) {
     showSuccess('Login successful!');
     failedAttempts = 0;
     securityTips.classList.add('d-none');
-    // enable AI Risk tab
+    // Enable AI Risk tab
     enableTab('#ai');
     setTimeout(() => {
       loginSection.classList.add('d-none');
@@ -57,7 +61,7 @@ loginForm.addEventListener('submit', e => {
     failedAttempts++;
     if (failedAttempts >= 5) {
       loginForm.querySelector('button').disabled = true;
-      showError('Locked after 5 failed attempts. Contact support.');
+      showError('Account locked after 5 failed attempts. Contact support.');
       securityTips.classList.remove('d-none');
     } else if (failedAttempts >= 3) {
       showError(`Invalid (${failedAttempts}/5). Possible attack?`);
@@ -73,7 +77,6 @@ loginForm.addEventListener('submit', e => {
 // ----------------------------------
 const calcScoreBtn = document.getElementById('calcScoreBtn');
 const riskResult   = document.getElementById('riskResult');
-
 calcScoreBtn.onclick = () => {
   const v1 = +document.getElementById('q1').value;
   const v2 = +document.getElementById('q2').value;
@@ -81,7 +84,7 @@ calcScoreBtn.onclick = () => {
   const level = score <= 1 ? 'Low' : score <= 2 ? 'Moderate' : 'High';
   riskResult.innerHTML = `<strong>${level}</strong> risk (Score ${score}/4)`;
   riskResult.className = (level==='High'?'text-danger ':'text-success ') + 'fs-5';
-  // enable Gaze Engagement
+  // Enable Gaze Engagement
   enableTab('#gaze');
 };
 
@@ -101,22 +104,22 @@ const gazeStats        = document.getElementById('gazeStats');
 let heatmap, calibrated=false, tracking=false, heatmapVisible=false;
 let gazeData=[], fixations=[], lastPos=null, fixStart=null, lastTime=0;
 
-// Resize scan canvas
-function resizeCanvas(){
+// Resize scan canvas responsively
+function resizeCanvas() {
   scanCanvas.width  = scanCanvas.clientWidth;
   scanCanvas.height = 200;
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// Calibration
+// Calibration routine
 startCal.onclick = () => {
   calMsg.innerText = 'Tap each dot to calibrate.';
   calArea.innerHTML = `
     <img src="https://via.placeholder.com/600x300" class="w-100 h-100" alt="Content"/>
     <div id="heatmapContainer" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
-    <div id="gazeDot" style="position:absolute;width:12px;height:12px;background:red;
-         border-radius:50%;display:none;pointer-events:none;"></div>`;
+    <div id="gazeDot" style="position:absolute;width:12px;height:12px;
+         background:red;border-radius:50%;display:none;pointer-events:none;"></div>`;
   gazeControls.classList.add('d-none');
   calibrated = false;
   gazeData = []; fixations = [];
@@ -126,28 +129,32 @@ startCal.onclick = () => {
     {left:'90%', top:'90%'},
     {left:'10%', top:'90%'}
   ];
-  let count=0;
+  let count = 0;
   pts.forEach(pt => {
     const d = document.createElement('div');
     d.className = 'cal-dot';
     d.style.left = pt.left;
     d.style.top  = pt.top;
     d.onclick = () => {
-      d.style.background='green';
-      if (++count===4) {
-        calibrated=true;
-        calMsg.innerText='Calibration complete!';
+      d.style.background = 'green';
+      if (++count === 4) {
+        calibrated = true;
+        calMsg.innerText = 'Calibration complete!';
         gazeControls.classList.remove('d-none');
-        enableTab('#dce'); // enable DCE once calibrated
+        // Enable DCE after calibration
+        enableTab('#dce');
       }
     };
     calArea.appendChild(d);
   });
 };
 
-// Gaze tracking
+// Start gaze “tracking” via mousemove
 startGaze.onclick = () => {
-  if (!calibrated) return alert('Please calibrate first.');
+  if (!calibrated) {
+    alert('Please calibrate first.');
+    return;
+  }
   tracking = true;
   startGaze.disabled = true;
   stopGaze.disabled  = false;
@@ -155,50 +162,58 @@ startGaze.onclick = () => {
   heatmap = h337.create({ container: document.getElementById('heatmapContainer'), radius:30 });
 };
 
+// Stop gaze tracking
 stopGaze.onclick = () => {
   tracking = false;
   startGaze.disabled = false;
   stopGaze.disabled  = true;
   calArea.onmousemove = null;
   updateGazeStats();
-  enableTab('#dce'); // ensure DCE is enabled
+  // Ensure DCE is enabled
+  enableTab('#dce');
 };
 
+// Toggle heatmap overlay
 toggleHeatmapBtn.onclick = () => {
   heatmapVisible = !heatmapVisible;
-  toggleHeatmapBtn.innerText = heatmapVisible?'Reset Heatmap':'Show Heatmap';
-  if (heatmapVisible) heatmap.setData({ max:10, data: gazeData });
-  else document.getElementById('heatmapContainer').innerHTML='';
+  toggleHeatmapBtn.innerText = heatmapVisible ? 'Reset Heatmap' : 'Show Heatmap';
+  if (heatmapVisible) heatmap.setData({max:10, data:gazeData});
+  else document.getElementById('heatmapContainer').innerHTML = '';
 };
 
-function handleGaze(e){
-  const x=e.offsetX, y=e.offsetY, t=Date.now();
-  gazeData.push({ x,y,value:1 });
+function handleGaze(e) {
+  const x = e.offsetX, y = e.offsetY, t = Date.now();
+  gazeData.push({x,y,value:1});
   const ctx = scanCanvas.getContext('2d');
-  ctx.fillStyle='rgba(255,0,0,0.6)';
+  ctx.fillStyle = 'rgba(255,0,0,0.6)';
   ctx.beginPath();
-  ctx.arc(x/600*scanCanvas.width, y/300*scanCanvas.height, 4, 0,2*Math.PI);
+  ctx.arc(x/600*scanCanvas.width, y/300*scanCanvas.height, 4, 0, 2*Math.PI);
   ctx.fill();
   if (lastPos && tracking) {
     const dist = Math.hypot(x-lastPos.x, y-lastPos.y);
-    if (dist<30) {
-      if (!fixStart) fixStart = { x:lastPos.x, y:lastPos.y, t:lastTime };
+    if (dist < 30) {
+      if (!fixStart) fixStart = {x:lastPos.x, y:lastPos.y, t:lastTime};
     } else if (fixStart) {
-      fixations.push({ x:fixStart.x, y:fixStart.y, dur:lastTime-fixStart.t });
+      fixations.push({x:fixStart.x, y:fixStart.y, dur:lastTime-fixStart.t});
       fixStart = null;
     }
   }
   const dot = document.getElementById('gazeDot');
-  dot.style.display='block'; dot.style.left=`${x}px`; dot.style.top=`${y}px`;
-  lastPos={ x,y }; lastTime = t;
+  dot.style.display = 'block';
+  dot.style.left    = `${x}px`;
+  dot.style.top     = `${y}px`;
+  lastPos = {x,y};
+  lastTime = t;
 }
 
-function updateGazeStats(){
-  if (fixStart) fixations.push({ x:fixStart.x, y:fixStart.y, dur:Date.now()-fixStart.t });
+function updateGazeStats() {
+  if (fixStart) {
+    fixations.push({x:fixStart.x, y:fixStart.y, dur:Date.now()-fixStart.t});
+  }
   const c = fixations.length;
   const avgDur = c ? (fixations.reduce((s,f)=>s+f.dur,0)/c).toFixed(0) : 0;
   let sacSum = 0;
-  for (let i=1; i<fixations.length; i++){
+  for (let i=1; i<fixations.length; i++) {
     sacSum += Math.hypot(
       fixations[i].x - fixations[i-1].x,
       fixations[i].y - fixations[i-1].y
@@ -214,14 +229,14 @@ function updateGazeStats(){
 // ----------------------------------
 // DCE Preferences
 // ----------------------------------
-document.getElementById('submitDCE').onclick = ()=>{
+document.getElementById('submitDCE').onclick = () => {
   const c1 = document.querySelector('input[name="sc1"]:checked')?.value;
   const c2 = document.querySelector('input[name="sc2"]:checked')?.value;
   const c3 = document.querySelector('input[name="sc3"]:checked')?.value;
   let v=0,i=0,g=0,h=0,l=0;
-  if(c1==='A'){ i++; l++; g++; } else { v++; h++; }
-  if(c2==='A'){ g++; h++; } else { g++; l++; }
-  if(c3==='A'){ i++; l++; } else { v++; h++; }
+  if (c1==='A') { i++; l++; g++; } else { v++; h++; }
+  if (c2==='A') { g++; h++; }   else { g++; l++; }
+  if (c3==='A') { i++; l++; }   else { v++; h++; }
   const modePref = v>=i ? 'Virtual'     : 'In-Person';
   const sizePref = g>=1 ? 'Group'       : 'One-on-One';
   const freqPref = h>=l ? 'Frequent'    : 'Less Frequent';
@@ -231,43 +246,42 @@ document.getElementById('submitDCE').onclick = ()=>{
       <li><strong>Setting:</strong> ${sizePref}</li>
       <li><strong>Frequency:</strong> ${freqPref}</li>
     </ul>`;
+  // Enable Recommendations
   enableTab('#recs');
 };
 
 // ----------------------------------
-// Recommendations & Audio & Reminders & Badges & PDF
+// Recommendations, Audio, Reminders, Badges & PDF
 // ----------------------------------
-function awardBadge(name){
+function awardBadge(name) {
   if (badges.includes(name)) return;
   badges.push(name);
   const el = document.createElement('span');
-  el.className='badge bg-success me-1';
-  el.innerText = name;
+  el.className   = 'badge bg-success me-1';
+  el.innerText   = name;
   document.getElementById('badges').appendChild(el);
 }
 
-document.querySelector('[data-bs-target="#recs"]').addEventListener('shown.bs.tab', ()=>{
+document.querySelector('[data-bs-target="#recs"]').addEventListener('shown.bs.tab', () => {
   const recs = [];
-  const rl = document.getElementById('riskResult').innerText.split(' ')[0];
-  if (rl==='High') {
-    recs.push('<li>' + (document.querySelector('input[name="sc1"]:checked').value==='A'
-      ? 'Attend a local weekly meetup.'
-      : 'Join a daily online support group.') + '</li>');
-  }
-  // Add more logic for Moderate/Low...
+  const rl   = document.getElementById('riskResult').innerText.split(' ')[0];
+  recs.push( rl==='High'
+    ? '<li>Join a daily online support group.</li>'
+    : '<li>Keep up your current social connections.</li>' );
   document.getElementById('recommendations').innerHTML = `<ol>${recs.join('')}</ol>`;
   awardBadge('Recommendations Viewed');
+  // Enable Summary
   enableTab('#summary');
 });
 
-// Audio journal
+// Audio journaling
 let recorder, audioChunks = [];
-navigator.mediaDevices.getUserMedia({audio:true})
+navigator.mediaDevices.getUserMedia({ audio:true })
   .then(stream => {
     recorder = new MediaRecorder(stream);
-    recorder.ondataavailable = e=> audioChunks.push(e.data);
-    recorder.onstop = ()=>{
-      const blob = new Blob(audioChunks,{type:'audio/webm'});
+    recorder.ondataavailable = e => audioChunks.push(e.data);
+    recorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
       const url  = URL.createObjectURL(blob);
       document.getElementById('audioMsg').innerHTML =
         `<audio controls src="${url}"></audio>`;
@@ -275,30 +289,33 @@ navigator.mediaDevices.getUserMedia({audio:true})
     };
   });
 
-document.getElementById('startAudio').onclick = ()=> {
-  audioChunks=[]; recorder.start();
-  startAudio.disabled=true; stopAudio.disabled=false;
+document.getElementById('startAudio').onclick = () => {
+  audioChunks = [];
+  recorder.start();
+  startAudio.disabled = true;
+  stopAudio.disabled  = false;
   document.getElementById('audioMsg').innerText = 'Recording…';
 };
-document.getElementById('stopAudio').onclick = ()=> {
+document.getElementById('stopAudio').onclick = () => {
   recorder.stop();
-  startAudio.disabled=false; stopAudio.disabled=true;
+  startAudio.disabled = false;
+  stopAudio.disabled  = true;
 };
 
 // Reminders
-document.getElementById('setReminder').onclick = ()=> {
+document.getElementById('setReminder').onclick = () => {
   const dt = document.getElementById('reminderTime').value;
   if (!dt) return;
   reminders.push(dt);
   const li = document.createElement('li');
-  li.className='list-group-item';
-  li.innerText = new Date(dt).toLocaleString();
+  li.className  = 'list-group-item';
+  li.innerText  = new Date(dt).toLocaleString();
   document.getElementById('reminderList').appendChild(li);
   awardBadge('Planner');
 };
 
 // Summary & PDF
-document.querySelector('[data-bs-target="#summary"]').addEventListener('shown.bs.tab', ()=>{
+document.querySelector('[data-bs-target="#summary"]').addEventListener('shown.bs.tab', () => {
   const summaryHTML = `
     <h5>Risk Level:</h5><p>${document.getElementById('riskResult').innerText}</p>
     <h5>Preferences:</h5>${document.getElementById('dceResult').innerHTML}
@@ -306,7 +323,8 @@ document.querySelector('[data-bs-target="#summary"]').addEventListener('shown.bs
     <h5>Reminders:</h5><ul>${reminders.map(r=>`<li>${new Date(r).toLocaleString()}</li>`).join('')}</ul>`;
   document.getElementById('summaryContent').innerHTML = summaryHTML;
 });
-document.getElementById('generatePDF').onclick = ()=>{
+
+document.getElementById('generatePDF').onclick = () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   doc.html(document.getElementById('summaryContent'), {
