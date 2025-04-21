@@ -1,244 +1,187 @@
-// LOGIN & TAB CONTROL
-const VALID_USER = 'testuser', VALID_PASS = 'welcome123';
-let failedAttempts = 0, reminders = [], badges = [];
+document.addEventListener('DOMContentLoaded', () => {
+  // === GLOBAL STATE ===
+  let riskProb = 0, riskLevel = '';
+  let gazeData = [], calibrated = [false, false, false, false];
+  let slideIndex = 0, dceResponses = [];
+  const tasks = [
+    { A:{type:'Counselling', method:'Hybrid', freq:'Weekly', duration:'2h', access:'Wider', cost:5},
+      B:{type:'VR',          method:'Virtual',freq:'Monthly',duration:'4h', access:'Home',  cost:20} },
+    { A:{type:'Peer support',method:'Virtual',freq:'Weekly',duration:'2h', access:'Home',  cost:50},
+      B:{type:'Counselling', method:'Hybrid', freq:'Daily', duration:'30m',access:'Local', cost:20} },
+    { A:{type:'Counselling',method:'Hybrid', freq:'Weekly', duration:'2h', access:'Local', cost:20},
+      B:{type:'Community',   method:'In-person',freq:'Monthly',duration:'30m',access:'Wider', cost:50} },
+    { A:{type:'Community',  method:'In-person',freq:'Weekly', duration:'4h', access:'Home',  cost:20},
+      B:{type:'VR',         method:'Hybrid',   freq:'Daily',  duration:'30m',access:'Local', cost:20} },
+    { A:{type:'Community',  method:'Hybrid',   freq:'Monthly',duration:'4h', access:'Wider', cost:5},
+      B:{type:'Peer support',method:'In-person',freq:'Daily', duration:'2h', access:'Home',  cost:50} },
+    { A:{type:'VR',         method:'In-person',freq:'Monthly',duration:'4h', access:'Wider', cost:20},
+      B:{type:'Counselling',method:'In-person',freq:'Weekly', duration:'30m',access:'Local', cost:0} },
+    { A:{type:'Community',  method:'In-person',freq:'Daily',  duration:'2h', access:'Home',  cost:20},
+      B:{type:'Peer support',method:'Hybrid',  freq:'Weekly',duration:'4h', access:'Wider', cost:0} },
+    { A:{type:'Community',  method:'In-person',freq:'Daily',  duration:'30m',access:'Wider', cost:5},
+      B:{type:'VR',         method:'Hybrid',  freq:'Weekly',duration:'4h', access:'Home',  cost:50} },
+    { A:{type:'Community',  method:'In-person',freq:'Daily',  duration:'30m',access:'Home',  cost:0},
+      B:{type:'Counselling',method:'Hybrid',  freq:'Monthly',duration:'4h', access:'Wider', cost:50} }
+  ];
 
-const loginForm    = document.getElementById('loginForm');
-const loginMsg     = document.getElementById('loginMsg');
-const securityTips = document.getElementById('securityTips');
-const loginSection = document.getElementById('loginSection');
-const appContent   = document.getElementById('appContent');
+  // Element refs
+  const tabs      = document.querySelectorAll('#tabs .nav-link');
+  const q1        = document.getElementById('q1');
+  const q2        = document.getElementById('q2');
+  const q3        = document.getElementById('q3');
+  const riskForm  = document.getElementById('risk-form');
+  const riskRes   = document.getElementById('risk-result');
+  const startRead = document.getElementById('start-read');
+  const prevSlide = document.getElementById('prev-slide');
+  const nextSlide = document.getElementById('next-slide');
+  const finishRead= document.getElementById('finish-read');
+  const taskCont  = document.getElementById('task-container');
+  const dceForm   = document.getElementById('dce-form');
+  const recCont   = document.getElementById('rec-content');
 
-function enableTab(sel) {
-  const btn = document.querySelector(`[data-bs-target="${sel}"]`);
-  btn.removeAttribute('disabled');
-  btn.classList.remove('disabled');
-}
-function showTab(sel) {
-  new bootstrap.Tab(document.querySelector(`[data-bs-target="${sel}"]`)).show();
-}
-function showError(msg){ loginMsg.innerText=msg; loginMsg.className='text-danger'; }
-function showSuccess(msg){ loginMsg.innerText=msg; loginMsg.className='text-success'; }
-
-loginForm.addEventListener('submit', e=>{
-  e.preventDefault();
-  const u=document.getElementById('username').value.trim();
-  const p=document.getElementById('password').value;
-  if(!u||!p){ showError('Enter both fields.'); return; }
-  if(u===VALID_USER && p===VALID_PASS){
-    showSuccess('Login successful!');
-    failedAttempts=0;
-    securityTips.classList.add('d-none');
-    enableTab('#ai');
-    setTimeout(()=>{
-      loginSection.classList.add('d-none');
-      appContent.classList.remove('d-none');
-      showTab('#ai');
-      awardBadge('Social Starter');
-    },500);
-  } else {
-    failedAttempts++;
-    if(failedAttempts>=5){
-      loginForm.querySelector('button').disabled=true;
-      showError('Locked after 5 failed attempts.');
-      securityTips.classList.remove('d-none');
-    } else if(failedAttempts>=3){
-      showError(`Invalid (${failedAttempts}/5). Possible attack?`);
-      securityTips.classList.remove('d-none');
-    } else {
-      showError(`Invalid (${failedAttempts}/5).`);
-    }
+  function activateTab(i){
+    tabs[i].classList.remove('disabled');
+    new bootstrap.Tab(tabs[i]).show();
   }
-});
 
-// AI RISK
-const calcScoreBtn = document.getElementById('calcScoreBtn');
-const riskResult   = document.getElementById('riskResult');
-calcScoreBtn.onclick = ()=>{
-  const s = +q1.value + +q2.value;
-  const lvl = s<=1?'Low':s<=2?'Moderate':'High';
-  riskResult.innerHTML=`<strong>${lvl}</strong> risk (Score ${s}/4)`;
-  riskResult.className=(lvl==='High'?'text-danger ':'text-success ')+'fs-5';
-  enableTab('#gaze');
-};
-
-// GAZE
-const calArea          = document.getElementById('calArea');
-const calMsg           = document.getElementById('calMsg');
-const gazeControls     = document.getElementById('gazeControls');
-const startCal         = document.getElementById('startCal');
-const startGaze        = document.getElementById('startGaze');
-const stopGaze         = document.getElementById('stopGaze');
-const toggleHeatmapBtn = document.getElementById('toggleHeatmap');
-const scanCanvas       = document.getElementById('scanCanvas');
-const gazeStats        = document.getElementById('gazeStats');
-
-let heatmap, calibrated=false, tracking=false, heatmapVisible=false;
-let gazeData=[], fixations=[], lastPos=null, fixStart=null, lastTime=0;
-
-function resizeCanvas(){
-  scanCanvas.width=scanCanvas.clientWidth;
-  scanCanvas.height=200;
-}
-window.addEventListener('resize',resizeCanvas);
-resizeCanvas();
-
-startCal.onclick=()=>{
-  calMsg.innerText='Tap each dot to calibrate.';
-  calArea.innerHTML=`
-    <img src="https://via.placeholder.com/600x300" class="w-100 h-100" alt=""/>
-    <div id="heatmapContainer" style="position:absolute;top:0;left:0;width:100%;height:100%"></div>
-    <div id="gazeDot" style="position:absolute;width:12px;height:12px;
-         background:red;border-radius:50%;display:none;pointer-events:none;"></div>`;
-  gazeControls.classList.add('d-none');
-  calibrated=false; gazeData=[]; fixations=[];
-  const pts=[{l:'10%',t:'10%'},{l:'90%',t:'10%'},{l:'90%',t:'90%'},{l:'10%',t:'90%'}];
-  let cnt=0;
-  pts.forEach(pt=>{
-    const d=document.createElement('div');
-    d.className='cal-dot'; d.style.left=pt.l; d.style.top=pt.t;
-    d.onclick=()=>{ d.style.background='green'; if(++cnt===4){ calibrated=true; calMsg.innerText='Calibrated!'; gazeControls.classList.remove('d-none'); enableTab('#dce'); } };
-    calArea.appendChild(d);
-  });
-};
-
-startGaze.onclick=()=>{
-  if(!calibrated){ alert('Calibrate first'); return; }
-  tracking=true; startGaze.disabled=true; stopGaze.disabled=false;
-  calArea.onmousemove=handleGaze;
-  heatmap=h337.create({container:document.getElementById('heatmapContainer'),radius:30});
-};
-
-stopGaze.onclick=()=>{
-  tracking=false; startGaze.disabled=false; stopGaze.disabled=true;
-  calArea.onmousemove=null; updateGazeStats(); enableTab('#dce');
-};
-
-toggleHeatmapBtn.onclick=()=>{
-  heatmapVisible=!heatmapVisible;
-  toggleHeatmapBtn.innerText=heatmapVisible?'Reset Heatmap':'Show Heatmap';
-  if(heatmapVisible) heatmap.setData({max:10,data:gazeData});
-  else document.getElementById('heatmapContainer').innerHTML='';
-};
-
-function handleGaze(e){
-  const x=e.offsetX,y=e.offsetY,t=Date.now();
-  gazeData.push({x,y,value:1});
-  const ctx=scanCanvas.getContext('2d');
-  ctx.fillStyle='rgba(255,0,0,0.6)'; ctx.beginPath();
-  ctx.arc(x/600*scanCanvas.width,y/300*scanCanvas.height,4,0,2*Math.PI);
-  ctx.fill();
-  if(lastPos&&tracking){
-    const d=Math.hypot(x-lastPos.x,y-lastPos.y);
-    if(d<30){
-      if(!fixStart) fixStart={x:lastPos.x,y:lastPos.y,t:lastTime};
-    } else if(fixStart){
-      fixations.push({x:fixStart.x,y:fixStart.y,dur:lastTime-fixStart.t});
-      fixStart=null;
-    }
+  // Simple “AI” risk predictor
+  function aiRiskPredict(vals){
+    const w=[0.3,0.5,0.7], b=-1;
+    let z = b + w[0]*vals[0] + w[1]*vals[1] + w[2]*vals[2];
+    return 1/(1+Math.exp(-z));
   }
-  const dot=document.getElementById('gazeDot');
-  dot.style.display='block'; dot.style.left=`${x}px`; dot.style.top=`${y}px`;
-  lastPos={x,y}; lastTime=t;
-}
 
-function updateGazeStats(){
-  if(fixStart) fixations.push({x:fixStart.x,y:fixStart.y,dur:Date.now()-fixStart.t});
-  const c=fixations.length;
-  const avgDur=c?(fixations.reduce((s,f)=>s+f.dur,0)/c).toFixed(0):0;
-  let sac=0;
-  for(let i=1;i<fixations.length;i++){
-    sac+=Math.hypot(fixations[i].x-fixations[i-1].x,fixations[i].y-fixations[i-1].y);
-  }
-  const avgSac=fixations.length>1?(sac/(fixations.length-1)).toFixed(1):0;
-  gazeStats.innerHTML=`
-    <p><strong>Fixations:</strong> ${c}</p>
-    <p><strong>Avg duration:</strong> ${avgDur} ms</p>
-    <p><strong>Avg saccade:</strong> ${avgSac}px</p>`;
-}
-
-// DCE
-document.getElementById('submitDCE').onclick=()=>{
-  const c1=document.querySelector('input[name="sc1"]:checked')?.value;
-  const c2=document.querySelector('input[name="sc2"]:checked')?.value;
-  const c3=document.querySelector('input[name="sc3"]:checked')?.value;
-  let v=0,i=0,g=0,h=0,l=0;
-  if(c1==='A'){i++;l++;g++;}else{v++;h++;}
-  if(c2==='A'){g++;h++;}else{g++;l++;}
-  if(c3==='A'){i++;l++;}else{v++;h++;}
-  const mode=v>=i?'Virtual':'In-Person';
-  const size=g>=1?'Group':'One-on-One';
-  const freq=h>=l?'Frequent':'Less Frequent';
-  dceResult.innerHTML=`
-    <ul>
-      <li><strong>Mode:</strong> ${mode}</li>
-      <li><strong>Setting:</strong> ${size}</li>
-      <li><strong>Frequency:</strong> ${freq}</li>
-    </ul>`;
-  enableTab('#recs');
-};
-
-// Recommendations & audio & reminders & badges & PDF
-function awardBadge(name){
-  if(badges.includes(name)) return;
-  badges.push(name);
-  const b=document.createElement('span');
-  b.className='badge bg-success me-1'; b.innerText=name;
-  document.getElementById('badges').appendChild(b);
-}
-
-document.querySelector('[data-bs-target="#recs"]').addEventListener('shown.bs.tab',()=>{
-  const recs=[];
-  const rl=riskResult.innerText.split(' ')[0];
-  recs.push( rl==='High'
-    ? '<li>Join a daily online support group.</li>'
-    : '<li>Keep up your social routines.</li>' );
-  recommendations.innerHTML=`<ol>${recs.join('')}</ol>`;
-  awardBadge('Recommendations Viewed');
-  enableTab('#summary');
-});
-
-let recorder, audioChunks=[];
-navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
-  recorder=new MediaRecorder(s);
-  recorder.ondataavailable=e=>audioChunks.push(e.data);
-  recorder.onstop=()=>{
-    const blob=new Blob(audioChunks,{type:'audio/webm'});
-    const url=URL.createObjectURL(blob);
-    audioMsg.innerHTML=`<audio controls src="${url}"></audio>`;
-    awardBadge('Audio Express');
+  // === RISK HANDLER ===
+  riskForm.onsubmit = e => {
+    e.preventDefault();
+    const vals = [+q1.value, +q2.value, +q3.value];
+    riskProb = aiRiskPredict(vals);
+    riskLevel = riskProb>0.7?'High':riskProb>0.4?'Moderate':'Low';
+    riskRes.innerHTML = `<strong>Risk:</strong> ${riskLevel} (${(riskProb*100).toFixed(1)}%)`;
+    activateTab(1);
   };
+
+  // === GAZE SETUP ===
+  webgazer.setRegression('ridge').setTracker('clmtrackr').begin();
+  document.querySelectorAll('.cal-point').forEach((pt,i)=>{
+    pt.onclick = () => {
+      pt.style.background='green';
+      calibrated[i]=true;
+      if(calibrated.every(v=>v)) startRead.classList.remove('hidden');
+    };
+  });
+
+  startRead.onclick = () => {
+    gazeData = [];
+    webgazer.setGazeListener((d,t)=>{ if(d) gazeData.push({x:d.x,y:d.y,t}); });
+    document.getElementById('cal-area').classList.add('hidden');
+    startRead.classList.add('hidden');
+    showSlide();
+  };
+
+  function showSlide(){
+    document.querySelectorAll('.slide').forEach((s,i)=>
+      s.classList.toggle('hidden', i!==slideIndex)
+    );
+    document.getElementById('slide-content').classList.remove('hidden');
+    document.getElementById('slide-controls').classList.remove('hidden');
+    prevSlide.classList.toggle('hidden', slideIndex===0);
+    nextSlide.classList.toggle('hidden',
+      slideIndex===document.querySelectorAll('.slide').length-1
+    );
+    finishRead.classList.toggle('hidden',
+      slideIndex!==document.querySelectorAll('.slide').length-1
+    );
+  }
+  prevSlide.onclick = ()=>{ slideIndex--; showSlide(); };
+  nextSlide.onclick = ()=>{ slideIndex++; showSlide(); };
+  finishRead.onclick = () => {
+    webgazer.pause();
+    const total = gazeData.length;
+    let fixCount = 0;
+    gazeData.forEach((p,i,a)=>{
+      const cluster = a.filter(x=>{
+        return Math.hypot(x.x-p.x,x.y-p.y)<50;
+      });
+      if(cluster.length>5) fixCount++;
+    });
+    window.gazeStats = { total, fixations: fixCount };
+    activateTab(2);
+    buildDCE();
+  };
+
+  // === BUILD DCE ===
+  function buildDCE(){
+    tasks.forEach((t,i) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'mb-4';
+      wrapper.innerHTML = `
+        <h6>Task ${i+1}</h6>
+        <table class="table table-sm table-bordered">
+          <thead><tr><th>Feature</th><th>A</th><th>B</th></tr></thead>
+          <tbody>
+            <tr><td>Type</td><td>${t.A.type}</td><td>${t.B.type}</td></tr>
+            <tr><td>Method</td><td>${t.A.method}</td><td>${t.B.method}</td></tr>
+            <tr><td>Freq</td><td>${t.A.freq}</td><td>${t.B.freq}</td></tr>
+            <tr><td>Dur</td><td>${t.A.duration}</td><td>${t.B.duration}</td></tr>
+            <tr><td>Access</td><td>${t.A.access}</td><td>${t.B.access}</td></tr>
+            <tr><td>Cost</td><td>${t.A.cost}</td><td>${t.B.cost}</td></tr>
+          </tbody>
+        </table>
+        <div>
+          <label class="me-3"><input type="radio" name="task${i}" value="A" required> A</label>
+          <label class="me-3"><input type="radio" name="task${i}" value="B"> B</label>
+          <label><input type="radio" name="task${i}" value="N"> Neither</label>
+        </div>
+      `;
+      taskCont.appendChild(wrapper);
+    });
+    activateTab(2);
+  }
+
+  // === DCE SUBMIT & RECOMMEND ===
+  dceForm.onsubmit = e => {
+    e.preventDefault();
+    dceResponses = tasks.map((t,i) => {
+      const v = document.querySelector(`input[name="task${i}"]:checked`).value;
+      return v==='A'?t.A : v==='B'?t.B : null;
+    });
+    activateTab(3);
+    renderRecommendations();
+  };
+
+  function renderRecommendations(){
+    const counts = { type:{}, method:{}, freq:{}, duration:{}, access:{}, cost:{} };
+    dceResponses.forEach(r => {
+      if(!r) return;
+      ['type','method','freq','duration','access','cost'].forEach(k => {
+        counts[k][r[k]] = (counts[k][r[k]]||0)+1;
+      });
+    });
+    const prefs = {};
+    Object.keys(counts).forEach(k => {
+      const top = Object.entries(counts[k])
+        .sort((a,b)=>b[1]-a[1])[0];
+      prefs[k] = top ? top[0] : 'No pref';
+    });
+    recCont.innerHTML = `
+      <p><strong>Risk:</strong> ${riskLevel}</p>
+      <p><strong>Gaze fixations:</strong> ${window.gazeStats.fixations}  
+      of ${window.gazeStats.total} points</p>
+      <p><strong>Your prefs:</strong>
+        Type=${prefs.type}, Method=${prefs.method},
+        Freq=${prefs.freq}, Dur=${prefs.duration},
+        Access=${prefs.access}, Cost=${prefs.cost}
+      </p>
+      <hr>
+      <p><strong>We recommend:</strong> a
+        <em>${prefs.type}</em> programme via
+        <em>${prefs.method}</em>,
+        <em>${prefs.freq}</em>,
+        sessions of <em>${prefs.duration}</em> at
+        <em>${prefs.access}</em>, costing
+        <em>${prefs.cost}</em>.
+      </p>
+    `;
+  }
 });
-
-startAudio.onclick=()=>{
-  audioChunks=[]; recorder.start();
-  startAudio.disabled=true; stopAudio.disabled=false;
-  audioMsg.innerText='Recording…';
-};
-stopAudio.onclick=()=>{
-  recorder.stop();
-  startAudio.disabled=false; stopAudio.disabled=true;
-};
-
-setReminder.onclick=()=>{
-  const dt=reminderTime.value; if(!dt) return;
-  reminders.push(dt);
-  const li=document.createElement('li');
-  li.className='list-group-item'; li.innerText=new Date(dt).toLocaleString();
-  reminderList.appendChild(li);
-  awardBadge('Planner');
-};
-
-document.querySelector('[data-bs-target="#summary"]').addEventListener('shown.bs.tab',()=>{
-  const sum=`
-    <h5>Risk Level:</h5><p>${riskResult.innerText}</p>
-    <h5>Preferences:</h5>${dceResult.innerHTML}
-    <h5>Badges:</h5><p>${badges.join(', ')}</p>
-    <h5>Reminders:</h5><ul>${reminders.map(r=>`<li>${new Date(r).toLocaleString()}</li>`).join('')}</ul>
-  `;
-  summaryContent.innerHTML=sum;
-});
-generatePDF.onclick=()=>{
-  const { jsPDF }=window.jspdf;
-  const doc=new jsPDF();
-  doc.html(summaryContent,{callback(pdf){pdf.save('EyeMind_Summary.pdf');},x:10,y:10,width:180});
-};
