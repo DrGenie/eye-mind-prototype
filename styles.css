@@ -1,40 +1,40 @@
-// sty //
 body {
   padding-top: 4rem;
 }
 .nav-tabs {
   margin-bottom: 1rem;
 }
+/* HELP PANEL */
+#help-panel {
+  margin-bottom: 1.5rem;
+}
+
+/* CALIBRATION AREA */
 .cal-point {
-  width: 30px;
-  height: 30px;
+  width: 30px; height: 30px;
   border-radius: 50%;
   background: #007bff;
-  position: absolute;
-  cursor: pointer;
+  position: absolute; cursor: pointer;
 }
 #cal-area {
-  position: relative;
-  height: 250px;
-  background: #eee;
+  position: relative; height: 250px; background: #eee;
 }
 #cp0 { top: 0; left: 0; }
 #cp1 { top: 0; right: 0; }
 #cp2 { bottom: 0; right: 0; }
 #cp3 { bottom: 0; left: 0; }
 
+/* SLIDES */
 #slide-content {
-  height: 200px;
-  overflow: auto;
-  background: #f8f9fa;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  margin-bottom: 1rem;
+  height: 200px; overflow: auto;
+  background: #f8f9fa; padding: 1rem;
+  border: 1px solid #ddd; margin-bottom: 1rem;
 }
 .slide {
   margin-bottom: 1rem;
 }
 
+/* TABLES */
 table {
   width: 100%;
 }
@@ -42,6 +42,7 @@ th, td {
   text-align: center;
 }
 
+/* HIDDEN */
 .hidden {
   display: none !important;
 }
